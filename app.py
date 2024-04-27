@@ -1,7 +1,7 @@
 from flask import Flask
 import google.generativeai as genai
 # import env
-from os import env
+from os import environ as env
 
 app = Flask(__name__)
 API_KEY = env.get("API_KEY")
