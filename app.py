@@ -1,6 +1,5 @@
 from flask import Flask
 import google.generativeai as genai
-# import env
 from os import environ as env
 
 app = Flask(__name__)
@@ -12,9 +11,25 @@ model = genai.GenerativeModel('gemini-pro')
 # id: Int -> chat: array of some shit
 chats = dict()
 
+@app.route("/<chat_id>/history")
+def history(chat_id: int):
+    if chat_id not in chats:
+        return f"No history for chat with id {chat_id}"
+
+    history = []
+
+    for msg in chats[chat_id].history:
+        history.append(
+            {
+                "role": msg.role,
+                "text": msg.parts[0].text
+            }
+        )
+
+    return history
+
 @app.route('/<chat_id>/<query>')
-def hello_world(chat_id: int, query: str):  # put application's code here
-    chat = None
+def chat(chat_id: int, query: str):  # put application's code here
     if chat_id in chats:
         chat = model.start_chat(history=chats[chat_id].history)
     else:
