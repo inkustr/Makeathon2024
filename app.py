@@ -36,20 +36,10 @@ def chat(chat_id: int, query: str):  # put application's code here
         chat = model.start_chat(history=[])
         chats[chat_id] = chat
 
-    chat.send_message(query)
+    response = chat.send_message(query)
     chats[chat_id] = chat
 
-    history = []
-
-    for msg in chat.history:
-        history.append(
-            {
-                "role": msg.role,
-                "text": msg.parts[0].text
-            }
-        )
-
-    return history
+    return response
 
 if __name__ == '__main__':
     app.run()
