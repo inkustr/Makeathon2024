@@ -2,6 +2,8 @@ from flask import Flask
 import google.generativeai as genai
 from os import environ as env
 
+import personaAnalysis
+
 app = Flask(__name__)
 API_KEY = env.get("API_KEY")
 genai.configure(api_key=API_KEY)
@@ -32,10 +34,12 @@ def history(chat_id: int):
 def chat(chat_id: int, query: str):  # put application's code here
     if chat_id in chats:
         chat = model.start_chat(history=chats[chat_id].history)
-    else:
+    else: #no previous chat history
         chat = model.start_chat(history=[])
         chats[chat_id] = chat
-
+        personaAdvice = personaAnalysis.createAnalysisPromptFromMessage(query)
+        print("PersonaAdvice: personaAdvice")
+        query += personaAdvice
     chat.send_message(query)
     chats[chat_id] = chat
 
