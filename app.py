@@ -11,7 +11,7 @@ model = genai.GenerativeModel('gemini-pro')
 # id: Int -> chat: array of some shit
 chats = dict()
 
-@app.route("/<chat_id>/history")
+@app.route("/history/<chat_id>")
 def history(chat_id: int):
     if chat_id not in chats:
         return f"No history for chat with id {chat_id}"
@@ -28,7 +28,7 @@ def history(chat_id: int):
 
     return history
 
-@app.route('/<chat_id>/<query>')
+@app.route('/chat/<chat_id>/<query>')
 def chat(chat_id: int, query: str):  # put application's code here
     if chat_id in chats:
         chat = model.start_chat(history=chats[chat_id].history)
