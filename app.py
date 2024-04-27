@@ -1,5 +1,6 @@
 from flask import Flask
 import google.generativeai as genai
+from google.generativeai import ChatSession
 from os import environ as env
 
 app = Flask(__name__)
@@ -32,6 +33,10 @@ def history(chat_id: int):
 def chat(chat_id: int, query: str):  # put application's code here
     if chat_id in chats:
         chat = model.start_chat(history=chats[chat_id].history)
+        # send preset message to Chat to make it behave as Mercedes consultant
+        with open("preset.txt", 'r') as f:
+            text = f.read()
+            chat.send_message(text)
     else:
         chat = model.start_chat(history=[])
         chats[chat_id] = chat
@@ -39,7 +44,8 @@ def chat(chat_id: int, query: str):  # put application's code here
     response = chat.send_message(query)
     chats[chat_id] = chat
 
-    return response
+    return response.parts[0].text
+
 
 if __name__ == '__main__':
     app.run()
