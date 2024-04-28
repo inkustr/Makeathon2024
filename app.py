@@ -58,6 +58,7 @@ def handle_chat():
     try:
         response = chat.send_message(message)
     except Exception as e:
+        print(e)
         return "I'm really sorry, but I can't chat right now. Please try again later."
 
     chats[chat_id] = chat
