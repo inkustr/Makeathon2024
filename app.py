@@ -1,15 +1,21 @@
 from flask import Flask
 import google.generativeai as genai
-from google.generativeai import ChatSession
 from os import environ as env
+from flask import request
+from lib.safety_instructions import safety_instructions
 
 app = Flask(__name__)
 API_KEY = env.get("API_KEY")
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-pro')
+with open("preset.txt", 'r') as f:
+    text = f.read()
 
+model = genai.GenerativeModel(
+    'gemini-1.5-pro-latest',
+    system_instruction=text
+)
 
-# id: Int -> chat: array of some shit
+del text
 chats = dict()
 
 @app.route("/history/<chat_id>")
@@ -29,19 +35,31 @@ def history(chat_id: int):
 
     return history
 
-@app.route('/chat/<chat_id>/<query>')
-def chat(chat_id: int, query: str):  # put application's code here
+
+@app.route('/reset/<chat_id>')
+def reset(chat_id):
+    if chat_id in chats:
+        del chats[chat_id]
+    return "Chat reset"
+
+
+@app.route('/chat', methods=['POST'])
+def handle_chat():
+    data = request.get_json()
+    chat_id = data['chatId']
+    message = data['message']
+
     if chat_id in chats:
         chat = model.start_chat(history=chats[chat_id].history)
-        # send preset message to Chat to make it behave as Mercedes consultant
-        with open("preset.txt", 'r') as f:
-            text = f.read()
-            chat.send_message(text)
     else:
-        chat = model.start_chat(history=[])
+        chat = model.start_chat()
         chats[chat_id] = chat
 
-    response = chat.send_message(query)
+    try:
+        response = chat.send_message(message)
+    except Exception as e:
+        return "I'm really sorry, but I can't chat right now. Please try again later."
+
     chats[chat_id] = chat
 
     return response.parts[0].text
